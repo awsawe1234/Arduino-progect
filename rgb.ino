@@ -1,39 +1,54 @@
-esphome:
-  name: esp8266+
-  platform: ESP8266
-  board: nodemcuv2
+// Pins connected to the RGB ribbon
+const int redPin = 9;
+const int greenPin = 10;
+const int bluePin = 11;
 
-wifi:
-  ssid: "название_вашей_сети"
-  password: "ваш_пароль"
+// Pin connected to the button
+const int buttonPin = 2;
 
-# Настройки OTA (Over-The-Air) для беспроводной загрузки
-ota:
-  password: "пароль_для_OTA_обновлений"
+// Variable to store the current color index
+int currentColorIndex = 0;
 
-# Объявляем 4 пина для управления реле
-output:
-  - platform: gpio
-    pin: D1
-    id: relay_1
-  - platform: gpio
-    pin: D2
-    id: relay_2
-  - platform: gpio
-    pin: D3
-    id: relay_3
-  - platform: gpio
-    pin: D4
-    id: relay_4
+// Array of RGB colors
+const int colors[][3] = {
+  {255, 0, 0},    // Red
+  {0, 255, 0},    // Green
+  {0, 0, 255},    // Blue
+  {255, 255, 0},  // Yellow
+  {255, 0, 255},  // Magenta
+  {0, 255, 255}   // Cyan
+};
 
-# Создаем веб-интерфейс для управления реле
-web_server:
-  port: 80
+void setup() {
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
+  
+  // Initialize the RGB ribbon to the first color
+  setColor(0);
+}
 
-# Добавляем графический интерфейс для управления
-api:
-  password: "пароль_API"
+void loop() {
+  // Read the button state
+  int buttonState = digitalRead(buttonPin);
+  
+  // Check if the button is pressed
+  if (buttonState == LOW) {
+    // Increment the current color index
+    currentColorIndex = (currentColorIndex + 1) % (sizeof(colors) / sizeof(colors[0]));
+    
+    // Set the new color
+    setColor(currentColorIndex);
+    
+    // Delay to avoid rapid switching
+    delay(200);
+  }
+}
 
-# Создаем интерфейс для обновлений прошивки через HTTP
-ota:
-  password: "пароль_OTA"
+void setColor(int colorIndex) {
+  analogWrite(redPin, colors[colorIndex][0]);
+  analogWrite(greenPin, colors[colorIndex][1]);
+  analogWrite(bluePin, colors[colorIndex][2]);
+}
+
